@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Subject colors</title>
+        <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+    </head>
+    <body>
+        <script>
+        const FILE = "survey-results.csv";
+
+        /**
+         * for each subject, clusters raw responses (repeatedly merges the clodest groups until none are within a set Lab distance)
+         * picks the three largest color clusters for each subject
+         * prints the discrete color name of the biggest cluster, the Lab average of all raw responses
+         * and for each top-3 cluster, the discrete color name, the Lab average of that group's raw responses, and its vote count
+         * (printed in the page and browser console)
+         */
+
+// Discrete color palette: names the clusters, doesn't affect grouping
+const PALETTE = {
+  "dark red": "#8b0000", "red": "#e41a1c", "light red": "#ff8080",
+  "orange": "#ff7f00", "light orange": "#ffb866",
+  "yellow": "#ffeb00", "light yellow": "#fff799",
+  "yellow green": "#a6e22e",
+  "dark green": "#006400", "green": "#2ca02c", "light green": "#90ee90",
+  "cyan": "#00bcd4", "light cyan": "#a0f0ff",
+  "dark blue": "#0a1f8f", "blue": "#1f4fe0", "light blue": "#7ab8ff",
+  "dark purple": "#4b0082", "purple": "#8e24aa", "light purple": "#c9a0ff",
+  "dark pink": "#c2185b", "pink": "#f781bf", "light pink": "#ffc0e0",
+  "dark brown": "#5a3a1a", "brown": "#8b5a2b", "light brown": "#c49a6c",
+  "black": "#111111", "dark gray": "#555555", "gray": "#999999",
+  "light gray": "#cccccc", "white": "#ffffff",
+};
+
+// get color distance with straight-line distance in Lab
+const dist = (a, b) => Math.hypot(a.l - b.l, a.a - b.a, a.b - b.b); 
+
+// get nearest palette color name (just for using it as a cluster label)
+const snap = hex => d3.least(Object.keys(PALETTE), n => dist(d3.lab(hex), d3.lab(PALETTE[n])));
+
+// get average of hex colors computed in Lab and returned as hex code
+const labMean = hexes => {
+  const L = hexes.map(h => d3.lab(h));
+  return d3.lab(d3.mean(L, c => c.l), d3.mean(L, c => c.a), d3.mean(L, c => c.b)).formatHex();
+};
+
+const CUTOFF = 25; // max average Lab distance for two groups to merge
+
+// start with one group per answer and repeatedly merge the two closest groups (average linkage) until none are within cutoff
+const cluster = hexes => {
+  let cs = hexes.map(h => [h]);
+  const gap = (A, B) => d3.mean(A.flatMap(a => B.map(b => dist(d3.lab(a), d3.lab(b)))));
+  while (cs.length > 1) {
+    let best = [Infinity];
+    cs.forEach((A, i) => cs.forEach((B, j) => {
+      if (i < j) { const d = gap(A, B); if (d < best[0]) best = [d, i, j]; }
+    }));
+    if (best[0] > CUTOFF) break;
+    const [, i, j] = best;
+    cs = [...cs.filter((_, k) => k !== i && k !== j), cs[i].concat(cs[j])];
+  }
+  return cs;
+};
+
+d3.text(FILE).then(text => {
+    const data = d3.dsvFormat(text.includes("\t") ? "\t" : ",").parse(text.trim());
+    const subjects = data.columns.filter(c => data[0][c].trim().startsWith("#")); // columns holding hex codes
+
+    const lines = subjects.flatMap(subject => {
+    const hexes = data.map(r => r[subject].trim().toLowerCase());
+    // cluster raw answers (biggest cluster first). Keep top 3 clusters
+    const top = cluster(hexes).sort((a, b) => b.length - a.length).slice(0, 3);
+    const name = c => snap(labMean(c)); // palette name of a cluster's average color
+    return [
+        subject,
+        `  discrete: ${PALETTE[name(top[0])]} (${name(top[0])})`, // palette color of the biggest cluster
+        // top 3: Lab mean of the cluster's raw answers, palette name, vote count
+        ...top.map((c, i) => `  ${i + 1}. ${labMean(c)}  ${name(c).padEnd(12)} x${c.length}`),
+        "",
+    ];
+  });
+  
+  const out = lines.join("\n");
+  
+  console.log(out);
+  document.getElementById("out").textContent = out;
+  
+})
+</script>
+</body>
+</html>
