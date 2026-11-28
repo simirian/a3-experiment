@@ -45,6 +45,39 @@ const getWrongColors = subjects => {
 };
 
 /**
+ * Tests the distance required between wrong colors by creating a color chart.
+ * @returns {d3.Selection}
+ */
+const wrongColorTest = _ => {
+  const svg = d3.create("svg")
+    .attr("width", 500)
+    .attr("height", 500);
+
+  for (let i = 0; i < 36; ++i) {
+    const start = i / 36 * Math.PI * 2;
+    const end = (i / 36 + 1 / 36) * Math.PI * 2;
+    console.log(start, end);
+    svg.append("path")
+      .attr("transform", "translate(250, 250)")
+      .attr("d", d3.arc()({
+        innerRadius: 200,
+        outerRadius: 250,
+        startAngle: start,
+        endAngle: end,
+      }))
+      .attr("fill", getWrongColors(["Math"])[0]);
+  }
+
+  svg.append("circle")
+    .attr("cx", 250)
+    .attr("cy", 250)
+    .attr("r", 200)
+    .attr("fill", correctColors["Math"]);
+
+  return svg;
+};
+
+/**
   * Shuffles an array in place.
   * @param a {any[]} The array to shuffle.
   * @returns {any[]} The shuffled array.
@@ -134,5 +167,16 @@ window.addEventListener("load", _ => {
     a.href = "data:image/svg," + encodeURIComponent(chart.outerHTML);
     a.download = "chart.svg";
     a.click();
-  })
+  });
+
+  const test = document.getElementById("test");
+  test.addEventListener("click", _ => {
+    const oldChart = document.getElementById("chart");
+    const newChart = wrongColorTest();
+    newChart.attr("id", "chart");
+    newChart.attr("xmlns", "http://www.w3.org/2000/svg");
+    if (oldChart)
+      oldChart.remove();
+    document.body.appendChild(newChart.node());
+  });
 });
