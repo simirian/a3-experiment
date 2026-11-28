@@ -1,20 +1,20 @@
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
 
 /**
- * Plots the cluster data for a subject as a bar chart. The data is expected to
- * have a `cluster` field which is used to generate cluster counts. This field
- * should be the hex code of the cluster.
+ * Plots the category data for a subject as a bar chart. The data is expected to
+ * have a `category` field which is used to generate category counts. This field
+ * should be the hex code of the category.
  *
  * @param data {Object[]} The data to plot.
  * @returns {d3.Selection} The svg node selection.
  */
-const clusterBarChart = (data) => {
-  const clusterCounts = {};
+export const clusterBarChart = (data) => {
+  const categoryCounts = {};
   for (const datum of data) {
-    if (clusterCounts[datum.cluster])
-      clusterCounts[datum.cluster] += 1;
+    if (categoryCounts[datum.category])
+      categoryCounts[datum.category] += 1;
     else
-      clusterCounts[datum.cluster] = 1;
+      categoryCounts[datum.category] = 1;
   }
 
   const width = 500;
@@ -26,20 +26,20 @@ const clusterBarChart = (data) => {
       .attr("height", height);
 
   const x = d3.scaleBand()
-      .domain(Object.keys(clusterCounts).sort((a, b) => clusterCounts[b] - clusterCounts[a]))
+      .domain(Object.keys(categoryCounts).sort((a, b) => categoryCounts[b] - categoryCounts[a]))
       .range([margin, width - margin])
       .padding(0.1);
   const y = d3.scaleLinear()
-      .domain([0, Math.max(...Object.values(clusterCounts))])
+      .domain([0, Math.max(...Object.values(categoryCounts))])
       .range([height - margin, margin]);
 
-  for (const cluster in clusterCounts) {
+  for (const category in categoryCounts) {
     svg.append("rect")
-        .attr("x", x(cluster))
-        .attr("y", y(clusterCounts[cluster]))
+        .attr("x", x(category))
+        .attr("y", y(categoryCounts[category]))
         .attr("width", x.bandwidth())
-        .attr("height", y(0) - y(clusterCounts[cluster]))
-        .attr("fill", cluster);
+        .attr("height", y(0) - y(categoryCounts[category]))
+        .attr("fill", category);
   }
 
   svg.append("g")
@@ -61,8 +61,8 @@ const clusterBarChart = (data) => {
  * @param data {Object[]} The data to plot.
  * @returns {d3.Selection} The generated chart selection.
  */
-const estimateBarChart = (data) => {
-  const groups = ["Black", "Grays", "Wrong", "Correct"];
+export const estimateBarChart = (data) => {
+  const groups = ["Black", "Grayscale", "Wrong", "Correct"];
   const colors = ["#303030", "#a0a0a0", "#ff4040", "#40ff40"];
   const bars = groups.map(e => data.filter(d => d.colors === e));
 
@@ -113,29 +113,3 @@ const estimateBarChart = (data) => {
 
   return svg;
 };
-
-window.addEventListener("load", _ => {
-  const colors = new Array(16);
-  for (let i = 0; i < 16; ++i)
-    colors[i] = d3.rgb(Math.random() * 256, Math.random() * 256, Math.random() * 256).formatHex();
-
-  const clusterData = [];
-  for (let i = 0; i < 16; ++i) {
-    const count = Math.floor(Math.random() * 100);
-    for (let j = 0; j < count; ++j)
-      clusterData.push({cluster: colors[i]});
-  }
-
-  const clusterChart = clusterBarChart(clusterData);
-  document.querySelector("body").appendChild(clusterChart.node());
-
-  const estimateData = new Array(100);
-  for (let i = 0; i < 100; ++i) {
-    estimateData[i] = {
-      error: Math.random() / 2,
-      colors: ["Black", "Grays", "Correct", "Wrong"][Math.floor(Math.random() * 4)]
-    };
-  }
-  const estimateChart = estimateBarChart(estimateData);
-  document.querySelector("body").appendChild(estimateChart.node());
-});
