@@ -22,32 +22,32 @@ export const clusterBarChart = (data) => {
   const margin = 20;
 
   const svg = d3.create("svg")
-      .attr("width", width)
-      .attr("height", height);
+    .attr("width", width)
+    .attr("height", height);
 
   const x = d3.scaleBand()
-      .domain(Object.keys(categoryCounts).sort((a, b) => categoryCounts[b] - categoryCounts[a]))
-      .range([margin, width - margin])
-      .padding(0.1);
+    .domain(Object.keys(categoryCounts).sort((a, b) => categoryCounts[b] - categoryCounts[a]))
+    .range([margin, width - margin])
+    .padding(0.1);
   const y = d3.scaleLinear()
-      .domain([0, Math.max(...Object.values(categoryCounts))])
-      .range([height - margin, margin]);
+    .domain([0, Math.max(...Object.values(categoryCounts))])
+    .range([height - margin, margin]);
 
   for (const category in categoryCounts) {
     svg.append("rect")
-        .attr("x", x(category))
-        .attr("y", y(categoryCounts[category]))
-        .attr("width", x.bandwidth())
-        .attr("height", y(0) - y(categoryCounts[category]))
-        .attr("fill", category);
+      .attr("x", x(category))
+      .attr("y", y(categoryCounts[category]))
+      .attr("width", x.bandwidth())
+      .attr("height", y(0) - y(categoryCounts[category]))
+      .attr("fill", category);
   }
 
   svg.append("g")
-      .attr("transform", `translate(0, ${height - margin})`)
-      .call(d3.axisBottom(x));
+    .attr("transform", `translate(0, ${height - margin})`)
+    .call(d3.axisBottom(x));
   svg.append("g")
-      .attr("transform", `translate(${margin}, 0)`)
-      .call(d3.axisLeft(y));
+    .attr("transform", `translate(${margin}, 0)`)
+    .call(d3.axisLeft(y));
 
   return svg;
 };
@@ -71,45 +71,45 @@ export const estimateBarChart = (data) => {
   const margin = 20;
 
   const svg = d3.create("svg")
-      .attr("width", width)
-      .attr("height", height);
+    .attr("width", width)
+    .attr("height", height);
 
   const x = d3.scaleBand()
-      .domain(groups)
-      .range([margin, width - margin])
-      .padding(0.1);
+    .domain(groups)
+    .range([margin, width - margin])
+    .padding(0.1);
   const y = d3.scaleLinear()
-      .domain([0, d3.max(data, e => e.error)])
-      .range([height - margin, margin]);
+    .domain([0, d3.max(data, e => e.error)])
+    .range([height - margin, margin]);
 
   for (let i = 0; i < bars.length; ++i) {
     const min = d3.min(bars[i], e => e.error);
     const max = d3.max(bars[i], e => e.error);
     const median = d3.median(bars[i], e => e.error);
     svg.append("rect")
-        .attr("x", x(groups[i]))
-        .attr("y", y(median))
-        .attr("width", x.bandwidth())
-        .attr("height", y(0) - y(median))
-        .attr("fill", colors[i]);
+      .attr("x", x(groups[i]))
+      .attr("y", y(median))
+      .attr("width", x.bandwidth())
+      .attr("height", y(0) - y(median))
+      .attr("fill", colors[i]);
 
     // this is an I-shape path which is scaled to be an error bar based on the min and max
     const w = x.bandwidth() / 2;
     const h = y(min) - y(max);
     svg.append("path")
-        .attr("d", `M 0 0 H ${w} H ${w / 2} V ${h} H 0 H ${w}`)
-        .attr("transform", `translate(${x(groups[i]) + w / 2}, ${y(max)})`)
-        .attr("fill", "none")
-        .attr("stroke", "#000000")
-        .attr("stroke-width", 3);
+      .attr("d", `M 0 0 H ${w} H ${w / 2} V ${h} H 0 H ${w}`)
+      .attr("transform", `translate(${x(groups[i]) + w / 2}, ${y(max)})`)
+      .attr("fill", "none")
+      .attr("stroke", "#000000")
+      .attr("stroke-width", 3);
   }
 
   svg.append("g")
-      .attr("transform", `translate(0, ${height - margin})`)
-      .call(d3.axisBottom(x));
+    .attr("transform", `translate(0, ${height - margin})`)
+    .call(d3.axisBottom(x));
   svg.append("g")
-      .attr("transform", `translate(${margin}, 0)`)
-      .call(d3.axisLeft(y));
+    .attr("transform", `translate(${margin}, 0)`)
+    .call(d3.axisLeft(y));
 
   return svg;
 };
@@ -131,32 +131,32 @@ export const surveyBarChart = (categories, values, colors, max) => {
   max = max || d3.max(values);
 
   const svg = d3.create("svg")
-      .attr("width", width)
-      .attr("height", height);
+    .attr("width", width)
+    .attr("height", height);
 
   const x = d3.scaleBand()
-      .domain(categories)
-      .range([margin, width - margin])
-      .padding(0.1);
+    .domain(categories)
+    .range([margin, width - margin])
+    .padding(0.1);
   const y = d3.scaleLinear()
-      .domain([0, max])
-      .range([height - margin, margin]);
+    .domain([0, max])
+    .range([height - margin, margin]);
 
   for (let i = 0; i < categories.length; ++i) {
     svg.append("rect")
-        .attr("x", x(categories[i]))
-        .attr("y", y(values[i]))
-        .attr("width", x.bandwidth())
-        .attr("height", y(0) - y(values[i]))
-        .attr("fill", colors[i]);
+      .attr("x", x(categories[i]))
+      .attr("y", y(values[i]))
+      .attr("width", x.bandwidth())
+      .attr("height", y(0) - y(values[i]))
+      .attr("fill", colors[i]);
   }
 
   svg.append("g")
-      .attr("transform", `translate(0, ${height - margin})`)
-      .call(d3.axisBottom(x));
+    .attr("transform", `translate(0, ${height - margin})`)
+    .call(d3.axisBottom(x));
   svg.append("g")
-      .attr("transform", `translate(${margin}, 0)`)
-      .call(d3.axisLeft(y));
+    .attr("transform", `translate(${margin}, 0)`)
+    .call(d3.axisLeft(y));
 
 
   return svg;

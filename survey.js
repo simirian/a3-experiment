@@ -27,7 +27,7 @@ const randomColor = _ => d3.rgb(Math.random() * 256, Math.random() * 256, Math.r
  * @param b {d3.LabColor} A color to compare.
  * @returns {boolean}
  */
-const tooClose = (a, b) => (a.l - b.l) ** 2 + (a.a - b.a) ** 2 + (a.b - b.b) ** 2 < 50;
+const tooClose = (a, b) => (a.l - b.l) ** 2 + (a.a - b.a) ** 2 + (a.b - b.b) ** 2 < 5000;
 
 /**
  * Maps a list of structures to colors which are not associated with them.
@@ -38,7 +38,7 @@ const getWrongColors = subjects => {
   return subjects.map(subject => {
     const correct = d3.lab(correctColors[subject]);
     let wrong = d3.lab(randomColor());
-    while(tooClose(correct, wrong))
+    while (tooClose(correct, wrong))
       wrong = d3.lab(randomColor());
     return wrong.formatHex();
   });
@@ -81,7 +81,7 @@ const randomGrayScale = len => {
  * @param len {number} The number of palette entires.
  * @returns {string[]}
  */
-const blacks = len =>  new Array(len).fill("#000000");
+const blacks = len => new Array(len).fill("#000000");
 
 /**
  * Generates a chart with random data for use in the color-association effect
