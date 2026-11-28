@@ -25,23 +25,26 @@ const randomColor = _ => d3.rgb(Math.random() * 256, Math.random() * 256, Math.r
  * Checks if colors are too close to be wrong.
  * @param a {d3.LabColor} A color to compare.
  * @param b {d3.LabColor} A color to compare.
+ * @param distance {number?} The distance which is too close, defaults to 70.
  * @returns {boolean}
  */
-const tooClose = (a, b) => (a.l - b.l) ** 2 + (a.a - b.a) ** 2 + (a.b - b.b) ** 2 < 5000;
+const tooClose = (a, b, distance) => {
+  return (a.l - b.l) ** 2 + (a.a - b.a) ** 2 + (a.b - b.b) ** 2
+    < (typeof distance === "number" ? distance ** 2 : 4900);
+}
 
 /**
- * Maps a list of structures to colors which are not associated with them.
- * @param subjects {string[]} The subjects to map to wrong colors.
+ * Gets a random color which is different from the given color.
+ * @param subjects {string[]} The colors to map to different colors.
+ * @param distance {number?} The minimum distance between the colors, defaults to 70.
  * @returns {string[]} The wrong color.
  */
-const getWrongColors = subjects => {
-  return subjects.map(subject => {
-    const correct = d3.lab(correctColors[subject]);
-    let wrong = d3.lab(randomColor());
-    while (tooClose(correct, wrong))
-      wrong = d3.lab(randomColor());
-    return wrong.formatHex();
-  });
+const getDifferentColor = (color, distance) => {
+  const clab = d3.lab(color);
+  let dlab = d3.lab(randomColor());
+  while (tooClose(clab, dlab, distance))
+    dlab = d3.lab(randomColor());
+  return dlab.formatHex();
 };
 
 /**
@@ -49,6 +52,8 @@ const getWrongColors = subjects => {
  * @returns {d3.Selection}
  */
 const wrongColorTest = _ => {
+  const color = randomColor().formatHex();
+
   const svg = d3.create("svg")
     .attr("width", 500)
     .attr("height", 500);
@@ -56,23 +61,22 @@ const wrongColorTest = _ => {
   for (let i = 0; i < 36; ++i) {
     const start = i / 36 * Math.PI * 2;
     const end = (i / 36 + 1 / 36) * Math.PI * 2;
-    console.log(start, end);
     svg.append("path")
       .attr("transform", "translate(250, 250)")
       .attr("d", d3.arc()({
-        innerRadius: 200,
+        innerRadius: 5,
         outerRadius: 250,
         startAngle: start,
         endAngle: end,
       }))
-      .attr("fill", getWrongColors(["Math"])[0]);
+      .attr("fill", getDifferentColor(color, 70));
   }
 
   svg.append("circle")
     .attr("cx", 250)
     .attr("cy", 250)
     .attr("r", 200)
-    .attr("fill", correctColors["Math"]);
+    .attr("fill", color);
 
   return svg;
 };
@@ -133,7 +137,7 @@ const generateChart = _ => {
       colors = randomGrayScale(subjects.length);
       break;
     case 2:
-      colors = getWrongColors(subjects);
+      colors = subjects.map(e => getDifferentColor(correctColors[e]));
       break;
     case 3:
       colors = subjects.map(e => correctColors[e]);
