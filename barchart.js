@@ -113,3 +113,51 @@ export const estimateBarChart = (data) => {
 
   return svg;
 };
+
+/**
+ * Creates a survey bar chart from the given categories, values, colors, and
+ * maximum. The data is supposed to be randomly generated and cureated.
+ * @param categories {string[]} The category (subject) names.
+ * @param values {number[]} The numbers per category, should be 0-1.
+ * @param volors {string[]} The colors for each bar.
+ * @param max {number} The maximum of the chart. If falsey, the maximum of `values` will be used.
+ * @returns {d3.Selection}
+ */
+export const surveyBarChart = (categories, values, colors, max) => {
+  const width = 500;
+  const height = 300;
+  const margin = 30;
+
+  max = max || d3.max(values);
+
+  const svg = d3.create("svg")
+      .attr("width", width)
+      .attr("height", height);
+
+  const x = d3.scaleBand()
+      .domain(categories)
+      .range([margin, width - margin])
+      .padding(0.1);
+  const y = d3.scaleLinear()
+      .domain([0, max])
+      .range([height - margin, margin]);
+
+  for (let i = 0; i < categories.length; ++i) {
+    svg.append("rect")
+        .attr("x", x(categories[i]))
+        .attr("y", y(values[i]))
+        .attr("width", x.bandwidth())
+        .attr("height", y(0) - y(values[i]))
+        .attr("fill", colors[i]);
+  }
+
+  svg.append("g")
+      .attr("transform", `translate(0, ${height - margin})`)
+      .call(d3.axisBottom(x));
+  svg.append("g")
+      .attr("transform", `translate(${margin}, 0)`)
+      .call(d3.axisLeft(y));
+
+
+  return svg;
+};
