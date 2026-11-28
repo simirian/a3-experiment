@@ -119,6 +119,7 @@ window.addEventListener("load", _ => {
     const oldChart = document.getElementById("chart");
     const newChart = generateChart();
     newChart.attr("id", "chart");
+    newChart.attr("xmlns", "http://www.w3.org/2000/svg");
     if (oldChart)
       oldChart.remove();
     document.body.appendChild(newChart.node());
@@ -130,7 +131,7 @@ window.addEventListener("load", _ => {
     const chart = document.getElementById("chart");
     if (!chart) return;
     const a = document.createElement("a");
-    a.href = "data:image/svg," + encodeURI(chart.outerHTML);
+    a.href = "data:image/svg," + encodeURIComponent(chart.outerHTML);
     a.download = "chart.svg";
     a.click();
   })
